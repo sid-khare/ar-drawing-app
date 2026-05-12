@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AR Draw</title>
+<title>AR Draw Pro</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600&display=swap');
@@ -16,6 +16,7 @@
   --glass-border:rgba(255,255,255,0.12);
   --neon:#00ffb3;
   --neon2:#7b5cff;
+  --danger:#ff3c78;
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 
@@ -30,13 +31,11 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:var(--void);
-  color:white;
+  background:#000;
   font-family:'DM Sans',sans-serif;
   touch-action:none;
+  color:white;
 }
-
-/* CAMERA */
 
 #camera-container{
   position:fixed;
@@ -50,25 +49,21 @@ html,body{
   object-fit:cover;
 }
 
-/* CANVAS */
-
 #draw-canvas{
   position:fixed;
   inset:0;
   touch-action:none;
 }
 
-/* SPLASH */
-
 #splash{
   position:fixed;
   inset:0;
   z-index:100;
+  background:#050508;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  background:#050508;
   gap:18px;
   transition:0.4s;
 }
@@ -86,18 +81,17 @@ html,body{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:34px;
+  font-size:36px;
   box-shadow:0 0 40px rgba(123,92,255,0.5);
 }
 
 .title{
   font-family:'Space Mono',monospace;
   letter-spacing:5px;
-  font-size:30px;
+  font-size:28px;
 }
 
 .start-btn{
-  margin-top:20px;
   border:none;
   border-radius:999px;
   padding:14px 36px;
@@ -107,8 +101,6 @@ html,body{
   font-weight:700;
   cursor:pointer;
 }
-
-/* UI */
 
 #ui{
   position:fixed;
@@ -125,8 +117,8 @@ html,body{
   right:0;
   padding:52px 16px 12px;
   display:flex;
-  gap:10px;
   align-items:center;
+  gap:10px;
   background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent);
 }
 
@@ -136,8 +128,8 @@ html,body{
   border:1px solid var(--glass-border);
   background:var(--glass);
   font-size:11px;
-  font-family:'Space Mono',monospace;
   letter-spacing:2px;
+  font-family:'Space Mono',monospace;
 }
 
 .spacer{
@@ -150,13 +142,13 @@ html,body{
   border-radius:50%;
   border:1px solid var(--glass-border);
   background:var(--glass);
-  backdrop-filter:blur(12px);
+  backdrop-filter:blur(10px);
   color:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
   cursor:pointer;
+  font-size:18px;
 }
 
 .bottom-bar{
@@ -174,7 +166,6 @@ html,body{
 
 .color-row{
   display:flex;
-  align-items:center;
   gap:8px;
   overflow-x:auto;
 }
@@ -207,13 +198,13 @@ html,body{
   border-radius:14px;
   border:1px solid var(--glass-border);
   background:var(--glass);
-  backdrop-filter:blur(12px);
+  backdrop-filter:blur(10px);
   display:flex;
   align-items:center;
   justify-content:center;
   gap:6px;
-  color:white;
   cursor:pointer;
+  font-size:14px;
 }
 
 .tool.active{
@@ -221,19 +212,22 @@ html,body{
   border-color:var(--neon2);
 }
 
-/* IMAGE PANEL */
+.tool.delete-active{
+  background:rgba(255,60,120,0.3);
+  border-color:var(--danger);
+}
 
 #img-panel{
   position:fixed;
   left:0;
   right:0;
   bottom:0;
-  z-index:30;
-  background:rgba(10,10,15,0.95);
+  z-index:40;
+  background:rgba(10,10,15,0.96);
   backdrop-filter:blur(18px);
-  padding:16px;
   border-top:1px solid var(--glass-border);
   border-radius:24px 24px 0 0;
+  padding:16px;
   transform:translateY(100%);
   transition:0.35s;
 }
@@ -243,7 +237,7 @@ html,body{
 }
 
 .grid{
-  margin-top:10px;
+  margin-top:12px;
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:8px;
@@ -268,7 +262,7 @@ html,body{
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor:pointer;
+  font-size:30px;
 }
 
 .done{
@@ -281,12 +275,6 @@ html,body{
   color:white;
 }
 
-input[type=file]{
-  display:none;
-}
-
-/* TOAST */
-
 #toast{
   position:fixed;
   top:120px;
@@ -295,16 +283,16 @@ input[type=file]{
   background:rgba(0,0,0,0.7);
   padding:10px 18px;
   border-radius:20px;
-  z-index:50;
   opacity:0;
-  transition:0.25s;
+  transition:0.2s;
+  z-index:80;
 }
 
 #toast.show{
   opacity:1;
 }
 
-#opacity-hint{
+#hint{
   position:fixed;
   top:50%;
   left:50%;
@@ -312,13 +300,17 @@ input[type=file]{
   background:rgba(0,0,0,0.7);
   padding:12px 18px;
   border-radius:16px;
-  z-index:60;
   opacity:0;
   transition:0.2s;
+  z-index:90;
 }
 
-#opacity-hint.show{
+#hint.show{
   opacity:1;
+}
+
+input[type=file]{
+  display:none;
 }
 </style>
 </head>
@@ -338,7 +330,7 @@ input[type=file]{
 <canvas id="draw-canvas"></canvas>
 
 <div id="toast"></div>
-<div id="opacity-hint"></div>
+<div id="hint"></div>
 
 <div id="ui">
 
@@ -355,13 +347,13 @@ input[type=file]{
 
     <div class="color-row">
 
-      <div class="color active" style="background:#fff" data-color="#ffffff"></div>
+      <div class="color active" style="background:#ffffff" data-color="#ffffff"></div>
       <div class="color" style="background:#00ffb3" data-color="#00ffb3"></div>
       <div class="color" style="background:#ff3c78" data-color="#ff3c78"></div>
       <div class="color" style="background:#7b5cff" data-color="#7b5cff"></div>
       <div class="color" style="background:#ffd700" data-color="#ffd700"></div>
 
-      <input type="range" min="2" max="40" value="6" class="slider" id="size-slider">
+      <input type="range" class="slider" min="2" max="40" value="6" id="size-slider">
 
     </div>
 
@@ -373,6 +365,10 @@ input[type=file]{
 
       <div class="tool" id="tool-stamp">
         🖼️ Stamp
+      </div>
+
+      <div class="tool" id="tool-delete">
+        🗑️ Delete
       </div>
 
       <div class="tool" onclick="togglePanel()">
@@ -420,8 +416,10 @@ const state = {
   dragOffsetX:0,
   dragOffsetY:0,
 
-  cameraFacing:'environment',
-  stream:null
+  deleteMode:false,
+
+  stream:null,
+  cameraFacing:'environment'
 };
 
 const canvas = document.getElementById('draw-canvas');
@@ -442,6 +440,10 @@ async function startApp(){
 
   try{
 
+    if(state.stream){
+      state.stream.getTracks().forEach(t=>t.stop());
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({
       video:{
         facingMode:state.cameraFacing
@@ -450,7 +452,14 @@ async function startApp(){
 
     state.stream = stream;
 
-    document.getElementById('video').srcObject = stream;
+    const video = document.getElementById('video');
+
+    video.srcObject = stream;
+
+    video.style.transform =
+      state.cameraFacing === 'user'
+      ? 'scaleX(-1)'
+      : 'scaleX(1)';
 
   }catch(e){
     showToast('Camera unavailable');
@@ -460,10 +469,6 @@ async function startApp(){
 }
 
 async function flipCamera(){
-
-  if(state.stream){
-    state.stream.getTracks().forEach(t=>t.stop());
-  }
 
   state.cameraFacing =
     state.cameraFacing === 'environment'
@@ -475,6 +480,20 @@ async function flipCamera(){
 
 /* TOOLS */
 
+function setTool(tool){
+
+  state.tool = tool;
+
+  document.getElementById('tool-draw')
+    .classList.toggle('active',tool==='draw');
+
+  document.getElementById('tool-stamp')
+    .classList.toggle('active',tool==='stamp');
+
+  document.getElementById('mode-label')
+    .textContent = tool.toUpperCase();
+}
+
 document.getElementById('tool-draw').onclick = ()=>{
   setTool('draw');
 };
@@ -483,16 +502,19 @@ document.getElementById('tool-stamp').onclick = ()=>{
   setTool('stamp');
 };
 
-function setTool(tool){
+document.getElementById('tool-delete').onclick = ()=>{
 
-  state.tool = tool;
+  state.deleteMode = !state.deleteMode;
 
-  document.getElementById('tool-draw').classList.toggle('active',tool==='draw');
-  document.getElementById('tool-stamp').classList.toggle('active',tool==='stamp');
+  document.getElementById('tool-delete')
+    .classList.toggle('delete-active',state.deleteMode);
 
-  document.getElementById('mode-label').textContent =
-    tool.toUpperCase();
-}
+  showToast(
+    state.deleteMode
+      ? 'Tap image to delete'
+      : 'Delete mode off'
+  );
+};
 
 /* COLORS */
 
@@ -500,9 +522,8 @@ document.querySelectorAll('.color').forEach(el=>{
 
   el.onclick = ()=>{
 
-    document.querySelectorAll('.color').forEach(c=>{
-      c.classList.remove('active');
-    });
+    document.querySelectorAll('.color')
+      .forEach(c=>c.classList.remove('active'));
 
     el.classList.add('active');
 
@@ -511,7 +532,7 @@ document.querySelectorAll('.color').forEach(el=>{
 
 });
 
-document.getElementById('size-slider').oninput = (e)=>{
+document.getElementById('size-slider').oninput = e=>{
   state.brushSize = parseInt(e.target.value);
 };
 
@@ -527,6 +548,51 @@ function getPos(e){
     src.clientX - rect.left,
     src.clientY - rect.top
   ];
+}
+
+/* BACKGROUND REMOVAL */
+
+function removeBackground(img){
+
+  const temp = document.createElement('canvas');
+  const tctx = temp.getContext('2d');
+
+  temp.width = img.width;
+  temp.height = img.height;
+
+  tctx.drawImage(img,0,0);
+
+  const imageData = tctx.getImageData(
+    0,
+    0,
+    temp.width,
+    temp.height
+  );
+
+  const data = imageData.data;
+
+  for(let i=0;i<data.length;i+=4){
+
+    const r = data[i];
+    const g = data[i+1];
+    const b = data[i+2];
+
+    if(r > 235 && g > 235 && b > 235){
+      data[i+3] = 0;
+    }
+
+    if(r < 18 && g < 18 && b < 18){
+      data[i+3] = 0;
+    }
+  }
+
+  tctx.putImageData(imageData,0,0);
+
+  const cleaned = new Image();
+
+  cleaned.src = temp.toDataURL('image/png');
+
+  return cleaned;
 }
 
 /* IMAGE DRAWING */
@@ -588,7 +654,7 @@ function getImageAt(x,y){
 
     const obj = state.placedImages[i];
 
-    const half = obj.size/2;
+    const half = obj.size / 2;
 
     if(
       x >= obj.x-half &&
@@ -616,6 +682,18 @@ function startDraw(e){
 
     const tapped = getImageAt(x,y);
 
+    if(tapped && state.deleteMode){
+
+      state.placedImages =
+        state.placedImages.filter(i=>i!==tapped);
+
+      redrawCanvas();
+
+      showToast('Image deleted');
+
+      return;
+    }
+
     if(tapped){
 
       state.activeImage = tapped;
@@ -641,19 +719,24 @@ function startDraw(e){
 
     img.onload = ()=>{
 
-      const obj = {
-        img,
-        x,
-        y,
-        size:140,
-        opacity:1
+      const cleaned = removeBackground(img);
+
+      cleaned.onload = ()=>{
+
+        const obj = {
+          img:cleaned,
+          x,
+          y,
+          size:140,
+          opacity:1
+        };
+
+        state.placedImages.push(obj);
+
+        state.activeImage = obj;
+
+        redrawCanvas();
       };
-
-      state.placedImages.push(obj);
-
-      state.activeImage = obj;
-
-      redrawCanvas();
     };
 
     img.src = state.selectedImg;
@@ -673,7 +756,7 @@ function startDraw(e){
     y,
     state.brushSize/2,
     0,
-    Math.PI*2
+    Math.PI * 2
   );
 
   ctx.fillStyle = state.color;
@@ -770,13 +853,12 @@ canvas.addEventListener('touchmove',(e)=>{
       state.activeImage.size =
         Math.max(
           40,
-          Math.min(600,state.activeImage.size)
+          Math.min(700,state.activeImage.size)
         );
 
       redrawCanvas();
 
-      const hint =
-        document.getElementById('opacity-hint');
+      const hint = document.getElementById('hint');
 
       hint.textContent =
         Math.round(state.activeImage.size) + 'px';
@@ -815,7 +897,7 @@ document.getElementById('file-input')
 
     const reader = new FileReader();
 
-    reader.onload = (ev)=>{
+    reader.onload = ev=>{
 
       state.images.push(ev.target.result);
 
@@ -832,7 +914,8 @@ function renderImages(){
 
   const grid = document.getElementById('img-grid');
 
-  grid.querySelectorAll('.thumb').forEach(t=>t.remove());
+  grid.querySelectorAll('.thumb')
+    .forEach(t=>t.remove());
 
   state.images.forEach(src=>{
 
@@ -878,8 +961,9 @@ function saveCanvas(){
 
   if(video.readyState >= 2){
 
-    if(state.cameraFacing === 'user'){
+    mctx.save();
 
+    if(state.cameraFacing === 'user'){
       mctx.translate(merged.width,0);
       mctx.scale(-1,1);
     }
@@ -891,6 +975,8 @@ function saveCanvas(){
       merged.width,
       merged.height
     );
+
+    mctx.restore();
   }
 
   mctx.drawImage(canvas,0,0);
