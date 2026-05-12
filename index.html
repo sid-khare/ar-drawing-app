@@ -147,6 +147,12 @@ html,body{
   color:white;
 }
 
+.icon-btn.active{
+  background:rgba(0,255,179,0.25);
+  border-color:var(--neon);
+  box-shadow:0 0 18px rgba(0,255,179,0.35);
+}
+
 .bottom-bar{
   pointer-events:all;
   position:absolute;
@@ -325,12 +331,19 @@ input[type=file]{
 <div id="ui">
 
   <div class="top-bar">
+
     <div class="mode" id="mode-label">DRAW</div>
+
     <div class="spacer"></div>
 
+    <div class="icon-btn" id="cook-btn" onclick="toggleCookingMode()">🍳</div>
+
     <div class="icon-btn" onclick="flipCamera()">🔄</div>
+
     <div class="icon-btn" onclick="saveCanvas()">💾</div>
+
     <div class="icon-btn" onclick="clearAll()">🗑️</div>
+
   </div>
 
   <div class="bottom-bar">
@@ -405,7 +418,10 @@ const state = {
   stream:null,
   cameraFacing:'environment',
 
-  lastTapTime:0
+  lastTapTime:0,
+
+  wakeLock:null,
+  cookingMode:false
 };
 
 const canvas = document.getElementById('draw-canvas');
@@ -463,6 +479,70 @@ async function flipCamera(){
 
   await startApp();
 }
+
+/* COOKING MODE */
+
+async function toggleCookingMode(){
+
+  try{
+
+    if(!state.cookingMode){
+
+      if('wakeLock' in navigator){
+
+        state.wakeLock =
+          await navigator.wakeLock.request('screen');
+
+        state.cookingMode = true;
+
+        document.getElementById('cook-btn')
+          .classList.add('active');
+
+        showToast('Cooking mode ON');
+      }else{
+
+        showToast('Wake Lock unsupported');
+      }
+
+    }else{
+
+      if(state.wakeLock){
+        await state.wakeLock.release();
+      }
+
+      state.wakeLock = null;
+
+      state.cookingMode = false;
+
+      document.getElementById('cook-btn')
+        .classList.remove('active');
+
+      showToast('Cooking mode OFF');
+    }
+
+  }catch(err){
+
+    showToast('Cooking mode unavailable');
+  }
+}
+
+/* RE-ENABLE WAKE LOCK */
+
+document.addEventListener('visibilitychange',async()=>{
+
+  if(
+    state.cookingMode &&
+    document.visibilityState === 'visible'
+  ){
+
+    try{
+
+      state.wakeLock =
+        await navigator.wakeLock.request('screen');
+
+    }catch(e){}
+  }
+});
 
 /* TOOLS */
 
@@ -637,8 +717,6 @@ function startDraw(e){
   if(state.tool === 'stamp'){
 
     const tapped = getImageAt(x,y);
-
-    /* DOUBLE TAP DELETE */
 
     const now = Date.now();
 
