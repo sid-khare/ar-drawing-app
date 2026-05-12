@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>AR Draw Pro</title>
+<title>AR Draw</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600&display=swap');
@@ -16,7 +16,6 @@
   --glass-border:rgba(255,255,255,0.12);
   --neon:#00ffb3;
   --neon2:#7b5cff;
-  --danger:#ff3c78;
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 
@@ -31,16 +30,15 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#000;
+  background:black;
+  color:white;
   font-family:'DM Sans',sans-serif;
   touch-action:none;
-  color:white;
 }
 
 #camera-container{
   position:fixed;
   inset:0;
-  background:black;
 }
 
 #video{
@@ -74,32 +72,31 @@ html,body{
 }
 
 .logo{
-  width:80px;
-  height:80px;
+  width:82px;
+  height:82px;
   border-radius:24px;
   background:linear-gradient(135deg,var(--neon2),var(--neon));
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:36px;
+  font-size:38px;
   box-shadow:0 0 40px rgba(123,92,255,0.5);
 }
 
 .title{
-  font-family:'Space Mono',monospace;
-  letter-spacing:5px;
   font-size:28px;
+  letter-spacing:5px;
+  font-family:'Space Mono',monospace;
 }
 
 .start-btn{
   border:none;
   border-radius:999px;
-  padding:14px 36px;
+  padding:14px 38px;
   font-family:'Space Mono',monospace;
   background:linear-gradient(135deg,var(--neon2),var(--neon));
   color:black;
   font-weight:700;
-  cursor:pointer;
 }
 
 #ui{
@@ -117,8 +114,8 @@ html,body{
   right:0;
   padding:52px 16px 12px;
   display:flex;
-  align-items:center;
   gap:10px;
+  align-items:center;
   background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent);
 }
 
@@ -143,12 +140,11 @@ html,body{
   border:1px solid var(--glass-border);
   background:var(--glass);
   backdrop-filter:blur(10px);
-  color:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor:pointer;
   font-size:18px;
+  color:white;
 }
 
 .bottom-bar{
@@ -202,9 +198,8 @@ html,body{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
-  cursor:pointer;
   font-size:14px;
+  gap:6px;
 }
 
 .tool.active{
@@ -212,17 +207,12 @@ html,body{
   border-color:var(--neon2);
 }
 
-.tool.delete-active{
-  background:rgba(255,60,120,0.3);
-  border-color:var(--danger);
-}
-
 #img-panel{
   position:fixed;
   left:0;
   right:0;
   bottom:0;
-  z-index:40;
+  z-index:50;
   background:rgba(10,10,15,0.96);
   backdrop-filter:blur(18px);
   border-top:1px solid var(--glass-border);
@@ -237,10 +227,10 @@ html,body{
 }
 
 .grid{
-  margin-top:12px;
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:8px;
+  margin-top:12px;
 }
 
 .thumb{
@@ -285,7 +275,7 @@ html,body{
   border-radius:20px;
   opacity:0;
   transition:0.2s;
-  z-index:80;
+  z-index:90;
 }
 
 #toast.show{
@@ -302,7 +292,7 @@ html,body{
   border-radius:16px;
   opacity:0;
   transition:0.2s;
-  z-index:90;
+  z-index:100;
 }
 
 #hint.show{
@@ -347,7 +337,7 @@ input[type=file]{
 
     <div class="color-row">
 
-      <div class="color active" style="background:#ffffff" data-color="#ffffff"></div>
+      <div class="color active" style="background:#fff" data-color="#ffffff"></div>
       <div class="color" style="background:#00ffb3" data-color="#00ffb3"></div>
       <div class="color" style="background:#ff3c78" data-color="#ff3c78"></div>
       <div class="color" style="background:#7b5cff" data-color="#7b5cff"></div>
@@ -365,10 +355,6 @@ input[type=file]{
 
       <div class="tool" id="tool-stamp">
         🖼️ Stamp
-      </div>
-
-      <div class="tool" id="tool-delete">
-        🗑️ Delete
       </div>
 
       <div class="tool" onclick="togglePanel()">
@@ -416,10 +402,10 @@ const state = {
   dragOffsetX:0,
   dragOffsetY:0,
 
-  deleteMode:false,
-
   stream:null,
-  cameraFacing:'environment'
+  cameraFacing:'environment',
+
+  lastTapTime:0
 };
 
 const canvas = document.getElementById('draw-canvas');
@@ -502,20 +488,6 @@ document.getElementById('tool-stamp').onclick = ()=>{
   setTool('stamp');
 };
 
-document.getElementById('tool-delete').onclick = ()=>{
-
-  state.deleteMode = !state.deleteMode;
-
-  document.getElementById('tool-delete')
-    .classList.toggle('delete-active',state.deleteMode);
-
-  showToast(
-    state.deleteMode
-      ? 'Tap image to delete'
-      : 'Delete mode off'
-  );
-};
-
 /* COLORS */
 
 document.querySelectorAll('.color').forEach(el=>{
@@ -595,7 +567,7 @@ function removeBackground(img){
   return cleaned;
 }
 
-/* IMAGE DRAWING */
+/* IMAGE SYSTEM */
 
 function redrawCanvas(){
 
@@ -604,8 +576,6 @@ function redrawCanvas(){
   state.placedImages.forEach(obj=>{
 
     ctx.save();
-
-    ctx.globalAlpha = obj.opacity;
 
     ctx.drawImage(
       obj.img,
@@ -626,20 +596,6 @@ function redrawCanvas(){
         obj.size,
         obj.size
       );
-
-      ctx.fillStyle = '#00ffb3';
-
-      ctx.beginPath();
-
-      ctx.arc(
-        obj.x + obj.size/2,
-        obj.y + obj.size/2,
-        10,
-        0,
-        Math.PI * 2
-      );
-
-      ctx.fill();
     }
 
     ctx.restore();
@@ -650,11 +606,11 @@ function redrawCanvas(){
 
 function getImageAt(x,y){
 
-  for(let i = state.placedImages.length - 1; i >= 0; i--){
+  for(let i=state.placedImages.length-1;i>=0;i--){
 
     const obj = state.placedImages[i];
 
-    const half = obj.size / 2;
+    const half = obj.size/2;
 
     if(
       x >= obj.x-half &&
@@ -670,7 +626,7 @@ function getImageAt(x,y){
   return null;
 }
 
-/* DRAWING */
+/* DRAW */
 
 function startDraw(e){
 
@@ -682,17 +638,30 @@ function startDraw(e){
 
     const tapped = getImageAt(x,y);
 
-    if(tapped && state.deleteMode){
+    /* DOUBLE TAP DELETE */
+
+    const now = Date.now();
+
+    if(
+      tapped &&
+      now - state.lastTapTime < 300
+    ){
 
       state.placedImages =
         state.placedImages.filter(i=>i!==tapped);
+
+      state.activeImage = null;
 
       redrawCanvas();
 
       showToast('Image deleted');
 
+      state.lastTapTime = 0;
+
       return;
     }
+
+    state.lastTapTime = now;
 
     if(tapped){
 
@@ -727,8 +696,7 @@ function startDraw(e){
           img:cleaned,
           x,
           y,
-          size:140,
-          opacity:1
+          size:140
         };
 
         state.placedImages.push(obj);
